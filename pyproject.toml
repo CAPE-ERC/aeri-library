@@ -12,20 +12,21 @@ license = { text = "MIT" }
 authors = [
     { name = "Shakir Adeyemi Tewogbade" },
 ]
-keywords = ["economics", "news", "risk-index", "nlp"]
+keywords = ["economics", "news", "risk-index", "africa", "nlp"]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering",
 ]
 dependencies = [
     "pandas>=1.5",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest>=7.0",
-]
+test = ["pytest>=7"]
 
 [project.urls]
 Homepage = "https://github.com/CAPE-ERC/aeri-library"
@@ -34,8 +35,6 @@ Issues = "https://github.com/CAPE-ERC/aeri-library/issues"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools.package-data]
-"aeri.data" = ["*.json"]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]

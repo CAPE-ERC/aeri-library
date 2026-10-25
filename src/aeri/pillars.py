@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .config import DEFAULT_CONFIG, PILLARS, AERIConfig
+from .match import term_matches
 from .text import normalize_text
 
 
@@ -12,14 +13,14 @@ def assign_pillars(
     """Flags for the 8 pillars; one article can activate several.
 
     Returns a dict keyed by pillar name (see `aeri.config.PILLARS`) with
-    boolean values.
+    boolean values. Matches whole words/phrases, not substrings.
     """
     normalized = normalize_text(text)
     flags: dict[str, bool] = {}
     for pillar in PILLARS:
-        keywords = config.pillar_keywords.get(pillar, frozenset())
+        keywords = config.pillar_keywords.get(pillar, ())
         flags[pillar] = bool(normalized) and any(
-            keyword in normalized for keyword in keywords
+            term_matches(normalized, keyword) for keyword in keywords
         )
     return flags
 
