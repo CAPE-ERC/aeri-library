@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aeri"
+version = "0.1.0"
+description = "AERI article scoring and country-month economic-risk index library."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Shakir Adeyemi Tewogbade" },
+]
+keywords = ["economics", "news", "risk-index", "nlp"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "pandas>=1.5",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/CAPE-ERC/aeri-library"
+Issues = "https://github.com/CAPE-ERC/aeri-library/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"aeri.data" = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
