@@ -15,6 +15,12 @@ and the production AERI Pillar API, so the CAPE libraries interoperate.
 ## Install
 
 ```bash
+pip install cape-aeri  # the import name is still `aeri`: import aeri
+```
+
+For development:
+
+```bash
 pip install -e ".[test]"
 ```
 
