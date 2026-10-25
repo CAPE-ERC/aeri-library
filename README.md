@@ -3,12 +3,13 @@
 AERI article scoring and country-month economic-risk index library, built
 from the AERI/ARS work at CAPE Economic Research and Consulting.
 
-This first release covers **Library 1** from the proposal: scoring each
-scraped news article and rolling the scores up into the country-month
-AERI (Africa Economic Risk Index). Pillar composite indices, the ARS
-composite score and early-warning alerts (Libraries 2-4) are planned as
-follow-up PRs on top of this foundation. Matching conventions, data
-layout and output schema are kept consistent with the sibling
+This covers **Libraries 1 and 2** from the proposal: scoring each scraped
+news article, rolling the scores up into the country-month AERI (Africa
+Economic Risk Index), and the eight pillar indices plus their
+PCA-combined composite. The ARS composite score and early-warning alerts
+(Libraries 3-4) are planned as follow-up PRs on top of this foundation.
+Matching conventions, data layout and output schema are kept consistent
+with the sibling
 [`newsindex`](https://github.com/CAPE-ERC/newsindex-library) (EPU) library
 and the production AERI Pillar API, so the CAPE libraries interoperate.
 
@@ -37,6 +38,9 @@ scored = aeri.score_articles(articles, dictionary)
 aeri_df = aeri.compute_aeri(scored)
 diag = aeri.diagnostics(scored)
 aeri_df = aeri.coverage_filter(aeri_df, diag)  # drop thin country-months
+
+pillars_df = aeri.pillar_indices(scored)
+composite = aeri.pillar_composite(aeri.transform_pillars(pillars_df))
 ```
 
 ## Data format
@@ -87,15 +91,50 @@ catalog: `InflationRisk`, `FXExternalRisk`, `DebtFiscalRisk`,
 `FinancialSectorRisk`, `GrowthRealEconomyRisk`, `CommoditySupplyRisk`,
 `PoliticalEconomyRisk`, `ClimateDisasterRisk`.
 
+## Pillar composite (`aeri.pillars`)
+
+Per-article pillar flagging (`assign_pillars()`, Library 1) and the
+country-month pillar-composite pipeline (Library 2) both live under
+`aeri.pillars`:
+
+| Function | What it does |
+| --- | --- |
+| `pillar_indices()` | `Pillar_p = 100 * sum(A_i * I_p,i) / N` for each of the 8 pillars |
+| `active_pillars()` | Number of pillars with a positive index, per country-month |
+| `transform_pillars()` | `log(1 + P)`, scaled to 0-1 between frozen 1st/99th-percentile bounds |
+| `calibrate_pillar_weights()` | First-principal-component weights for the 8 pillars |
+| `pillar_composite()` | `H_t = sum_p(100 * u_p * Q_p)`, the combined cross-pillar measure |
+| `rank_pillars()` | Ranks one country-period's pillars by raw index value, descending |
+
+```python
+pillars_df = aeri.pillar_indices(scored)
+coverage = aeri.active_pillars(pillars_df)       # ActivePillars per country-month
+transformed = aeri.transform_pillars(pillars_df)  # Q in [0, 1], frozen bounds
+composite = aeri.pillar_composite(transformed)    # PillarComposite, frozen weights
+```
+
+The frozen 1st/99th-percentile bounds (`DEFAULT_LOG_LOWER`/`DEFAULT_LOG_UPPER`)
+and PCA weights (`DEFAULT_PILLAR_WEIGHTS`) are sourced directly from the
+full AERI/ARS paper (Table 4): calibrated on 6,238 country-months with
+>=100 articles, Jan 2015-Jul 2025 (PC1 explains 52.50% of standardised
+variance). `fit_transform_bounds()` and `calibrate_pillar_weights()`
+recompute both from a different panel if needed; `calibrate_pillar_weights()`
+raises `MixedSignLoadingsError` if the panel doesn't support a single
+coherent "overall risk" direction (any negative loading after orientation).
+
+`rank_pillars()` has no documented methodology beyond "sort descending" --
+the paper's own pillar ranking is a pooled, cross-sample average (Table 6
+/ Figure 5), not a single-country-period function, so this is implemented
+as a straightforward per-row sort with nothing further to calibrate.
+
 ## Dictionaries
 
 `data/aeri_country_keywords.json` is the real, production EPTU-schema
 keyword dictionary (54 African countries, Economic/Policy/Uncertainty
-term lists) shared with `newsindex`. `is_relevant()` defaults to the
-Economic component alone for `R_i` -- **this default is an assumption**;
-no source document specified whether Policy terms should also count
-toward relevance. Add `"policy"` via `AERIConfig.relevance_components` to
-include them:
+term lists) shared with `newsindex`. `is_relevant()` uses the Economic
+component alone for `R_i` (confirmed: there's no source information to
+justify also counting Policy terms). `AERIConfig.relevance_components`
+remains overridable if that changes:
 
 ```python
 from aeri import AERIConfig
@@ -119,7 +158,6 @@ confirmation.
 
 ## Roadmap
 
-- Pillar composite indices and PCA-combined pillar measure (Library 2)
 - `ars` composite score (Library 3): `ARS = 100 * (0.40*Intensity + 0.25*Breadth + 0.20*Severity + 0.15*Structure)`, risk bands at 20/40/60/80
 - `riskalert` early-warning alerts (Library 4)
 
