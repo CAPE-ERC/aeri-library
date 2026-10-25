@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .config import DEFAULT_CONFIG, AERIConfig
+from .dictionary import CountryDictionary
 from .pillars import active_pillar_count, assign_pillars
 from .relevance import is_relevant
 from .text import normalize_text, word_count
@@ -11,21 +12,24 @@ from .text import normalize_text, word_count
 def confidence_weight(
     title: str,
     text: str,
+    entry: CountryDictionary,
     pillar_flags: dict[str, bool] | None = None,
     config: AERIConfig = DEFAULT_CONFIG,
 ) -> float:
     """W_i = clip(1 + 0.5*TitleHint + 0.2*LongText + 0.3*MultiPillar, 1, 2).
 
-    - TitleHint: the title itself carries an economic-relevance signal.
+    - TitleHint: the title itself carries an economic-relevance signal
+      (per the country's dictionary).
     - LongText: the article body is at least `long_text_word_threshold`
-      words (normalized word count).
+      words (normalized word count). This threshold is a placeholder --
+      no source document gave the real cutoff; see README.
     - MultiPillar: the article activates `multi_pillar_threshold` or more
       of the 8 pillars.
 
     `pillar_flags` can be passed in to reuse an `assign_pillars()` result
     already computed for this article; otherwise it is derived from `text`.
     """
-    title_hint = 1.0 if is_relevant(title, config) else 0.0
+    title_hint = 1.0 if is_relevant(title, entry, config) else 0.0
 
     normalized_text = normalize_text(text)
     long_text = 1.0 if word_count(normalized_text) >= config.long_text_word_threshold else 0.0

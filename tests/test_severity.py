@@ -20,3 +20,8 @@ def test_severity_tier_four_for_extreme_language():
 def test_severity_tier_highest_match_wins():
     text = "There is concern over a looming economic collapse and catastrophe."
     assert severity_tier(text) == 4
+
+
+def test_severity_tier_is_word_boundary_not_substring():
+    # The tier-4 term "war" must not match inside "warning" or "forward".
+    assert severity_tier("Analysts issued a warning about the forward outlook.") == 1

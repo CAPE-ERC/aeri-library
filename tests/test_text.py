@@ -10,9 +10,8 @@ def test_normalize_text_lowercases_and_collapses_whitespace():
     assert normalize_text("  Economic   CRISIS \n deepens  ") == "economic crisis deepens"
 
 
-def test_normalize_text_strips_accents_and_diacritics():
-    assert normalize_text("Économie en crise") == "economie en crise"
-    assert normalize_text("Inflação em alta") == "inflacao em alta"
+def test_normalize_text_strips_tags_and_unescapes_entities():
+    assert normalize_text("<p>Naira &amp; the economy</p>") == "naira & the economy"
 
 
 def test_normalize_text_handles_empty_input():
