@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from .config import DEFAULT_CONFIG, PILLARS, AERIConfig
-from .match import term_matches
-from .text import normalize_text
+from ..config import DEFAULT_CONFIG, PILLARS, AERIConfig
+from ..match import term_matches
+from ..text import normalize_text
 
 
 def assign_pillars(
