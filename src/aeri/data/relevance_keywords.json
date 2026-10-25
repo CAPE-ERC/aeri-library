@@ -1,0 +1,68 @@
+{
+  "en": [
+    "economy", "economic", "economics", "inflation", "deflation", "gdp",
+    "exchange rate", "devaluation", "depreciation", "currency", "forex",
+    "central bank", "interest rate", "monetary policy", "fiscal", "budget",
+    "deficit", "public debt", "sovereign debt", "treasury", "revenue", "tax",
+    "subsidy", "austerity", "imf", "world bank", "bailout", "loan",
+    "unemployment", "job losses", "poverty", "cost of living", "fuel price",
+    "food price", "price hike", "recession", "growth", "trade deficit",
+    "export", "import", "investment", "foreign investment", "stock exchange",
+    "bond market", "credit rating", "bank", "financial sector",
+    "commodity price", "oil price", "agriculture", "harvest", "drought",
+    "flood", "famine", "supply chain", "market", "remittance",
+    "economic crisis", "financial crisis"
+  ],
+  "fr": [
+    "economie", "economique", "inflation", "deflation", "pib",
+    "taux de change", "devaluation", "depreciation", "monnaie",
+    "banque centrale", "taux d'interet", "politique monetaire", "budget",
+    "deficit", "dette publique", "dette souveraine", "tresor", "recette",
+    "impot", "subvention", "austerite", "fmi", "banque mondiale", "pret",
+    "chomage", "pauvrete", "cout de la vie", "prix du carburant",
+    "prix alimentaire", "hausse des prix", "recession", "croissance",
+    "exportation", "importation", "investissement", "marche boursier",
+    "banque", "secteur financier", "prix des matieres premieres",
+    "prix du petrole", "agriculture", "recolte", "secheresse", "inondation",
+    "famine", "chaine d'approvisionnement", "marche", "crise economique",
+    "crise financiere"
+  ],
+  "pt": [
+    "economia", "economico", "inflacao", "deflacao", "pib",
+    "taxa de cambio", "desvalorizacao", "depreciacao", "moeda",
+    "banco central", "taxa de juro", "politica monetaria", "orcamento",
+    "deficit", "divida publica", "divida soberana", "tesouro", "receita",
+    "imposto", "subsidio", "austeridade", "fmi", "banco mundial",
+    "emprestimo", "desemprego", "pobreza", "custo de vida",
+    "preco do combustivel", "preco dos alimentos", "aumento de precos",
+    "recessao", "crescimento", "exportacao", "importacao", "investimento",
+    "bolsa de valores", "banco", "setor financeiro",
+    "preco das materias-primas", "preco do petroleo", "agricultura",
+    "colheita", "seca", "inundacao", "fome", "cadeia de abastecimento",
+    "mercado", "crise economica", "crise financeira"
+  ],
+  "ar": [
+    "اقتصاد", "اقتصادي", "تضخم", "انكماش", "الناتج المحلي الإجمالي",
+    "سعر الصرف", "تخفيض قيمة العملة", "عملة", "البنك المركزي",
+    "سعر الفائدة", "سياسة نقدية", "ميزانية", "عجز", "دين عام",
+    "دين سيادي", "خزانة", "إيرادات", "ضريبة", "دعم", "تقشف",
+    "صندوق النقد الدولي", "البنك الدولي", "قرض", "بطالة", "فقر",
+    "غلاء المعيشة", "سعر الوقود", "سعر الغذاء", "ارتفاع الأسعار",
+    "ركود", "نمو", "صادرات", "واردات", "استثمار", "بورصة", "بنك",
+    "القطاع المالي", "سعر النفط", "زراعة", "حصاد", "جفاف", "فيضان",
+    "مجاعة", "سلسلة الإمداد", "سوق", "أزمة اقتصادية", "أزمة مالية"
+  ],
+  "sw": [
+    "uchumi", "kiuchumi", "mfumko wa bei", "pato la taifa",
+    "kiwango cha ubadilishaji", "kushuka kwa thamani", "sarafu",
+    "benki kuu", "kiwango cha riba", "sera ya fedha", "bajeti", "nakisi",
+    "deni la umma", "hazina", "mapato", "kodi", "ruzuku", "ukali wa fedha",
+    "shirika la fedha duniani", "benki ya dunia", "mkopo",
+    "ukosefu wa ajira", "umaskini", "gharama ya maisha", "bei ya mafuta",
+    "bei ya chakula", "kupanda kwa bei", "mdororo wa uchumi", "ukuaji",
+    "mauzo nje", "uagizaji", "uwekezaji", "soko la hisa", "benki",
+    "sekta ya fedha", "bei ya bidhaa", "bei ya mafuta ghafi", "kilimo",
+    "mavuno", "ukame", "mafuriko", "njaa", "msururu wa ugavi", "soko",
+    "mgogoro wa kiuchumi", "mgogoro wa fedha"
+  ]
+}
