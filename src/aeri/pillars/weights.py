@@ -3,14 +3,15 @@
 Equation (11) of the CAPE AERI/ARS methodology (Main_AERI_ARS_Paper): the
 first principal component of the standardised, transformed pillars,
 converted back to the bounded scale and normalised to sum to 1. The same
-procedure (on different inputs) also calibrates the ARS component weights.
+procedure (on different inputs) also calibrates the ARS component weights
+(see `aeri.ars.weights.calibrate_ars_weights`).
 """
 
 from __future__ import annotations
 
-import numpy as np
 import pandas as pd
 
+from .._pca import MixedSignLoadingsError, first_principal_component_weights
 from ..config import PILLARS
 
 #: Frozen first-principal-component weights (Table 4, Main_AERI_ARS_Paper),
@@ -29,54 +30,16 @@ DEFAULT_PILLAR_WEIGHTS: dict[str, float] = {
 }
 
 
-class MixedSignLoadingsError(ValueError):
-    """The first principal component's loadings aren't (after orientation)
-    all one sign, so the calibration panel doesn't support a single
-    coherent "overall risk" weighting."""
-
-
 def calibrate_pillar_weights(
     transformed_df: pd.DataFrame, max_negative_share: float = 0.0
 ) -> dict[str, float]:
     """First-principal-component weights for the 8 pillars.
 
     `transformed_df` should be `transform_pillars()` output (Q in [0, 1])
-    for the calibration panel. Standardises each pillar, takes the leading
-    eigenvector of the covariance matrix (oriented so higher component
-    values mean higher pillar risk, i.e. the loadings sum positive),
-    converts the standardised loadings back to the bounded-input scale, and
-    normalises the result to sum to 1.
-
-    Raises `MixedSignLoadingsError` if more than `max_negative_share` of the
-    oriented loadings are negative, or if any pillar has zero variance in
-    the panel (can't be standardised) -- the calibration panel doesn't
-    support a single coherent weighting. The default (0.0) matches the
-    "rejects mixed-sign loadings" rule documented for this calibration
-    procedure: no negative loadings are tolerated.
+    for the calibration panel. See
+    `aeri._pca.first_principal_component_weights` for the procedure and
+    the meaning of `max_negative_share`; raises `MixedSignLoadingsError`
+    under the same conditions.
     """
-    values = transformed_df[list(PILLARS)].to_numpy(dtype=float)
-    mu = values.mean(axis=0)
-    sigma = values.std(axis=0, ddof=0)
-    zero_variance = [pillar for pillar, s in zip(PILLARS, sigma) if s == 0]
-    if zero_variance:
-        raise MixedSignLoadingsError(
-            f"pillars with zero variance in the calibration panel: {zero_variance}"
-        )
-
-    standardized = (values - mu) / sigma
-    covariance = np.cov(standardized, rowvar=False)
-    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
-    loadings = eigenvectors[:, int(np.argmax(eigenvalues))]
-    if loadings.sum() < 0:
-        loadings = -loadings
-
-    negative_share = float(np.mean(loadings < 0))
-    if negative_share > max_negative_share:
-        raise MixedSignLoadingsError(
-            f"{negative_share:.0%} of PC1 loadings are negative after orientation; "
-            "calibration panel does not support a single coherent weighting"
-        )
-
-    raw_weights = loadings / sigma
-    normalized = raw_weights / raw_weights.sum()
-    return dict(zip(PILLARS, (float(w) for w in normalized)))
+    matrix = transformed_df[list(PILLARS)].to_numpy(dtype=float)
+    return first_principal_component_weights(matrix, list(PILLARS), max_negative_share)

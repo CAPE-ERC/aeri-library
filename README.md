@@ -3,13 +3,12 @@
 AERI article scoring and country-month economic-risk index library, built
 from the AERI/ARS work at CAPE Economic Research and Consulting.
 
-This covers **Libraries 1 and 2** from the proposal: scoring each scraped
+This covers **Libraries 1-4** from the proposal: scoring each scraped
 news article, rolling the scores up into the country-month AERI (Africa
-Economic Risk Index), and the eight pillar indices plus their
-PCA-combined composite. The ARS composite score and early-warning alerts
-(Libraries 3-4) are planned as follow-up PRs on top of this foundation.
-Matching conventions, data layout and output schema are kept consistent
-with the sibling
+Economic Risk Index), the eight pillar indices plus their PCA-combined
+composite, the ARS composite score, and early-warning alerts. Matching
+conventions, data layout and output schema are kept consistent with the
+sibling
 [`newsindex`](https://github.com/CAPE-ERC/newsindex-library) (EPU) library
 and the production AERI Pillar API, so the CAPE libraries interoperate.
 
@@ -40,7 +39,12 @@ diag = aeri.diagnostics(scored)
 aeri_df = aeri.coverage_filter(aeri_df, diag)  # drop thin country-months
 
 pillars_df = aeri.pillar_indices(scored)
+coverage = aeri.active_pillars(pillars_df)
 composite = aeri.pillar_composite(aeri.transform_pillars(pillars_df))
+
+comps = aeri.components(aeri_df, diag, coverage)
+ars_df = aeri.ars_benchmark(comps)
+alerts = aeri.alert_table(ars_df, diag, coverage)
 ```
 
 ## Data format
@@ -127,6 +131,55 @@ the paper's own pillar ranking is a pooled, cross-sample average (Table 6
 / Figure 5), not a single-country-period function, so this is implemented
 as a straightforward per-row sort with nothing further to calibrate.
 
+## ARS composite and early-warning alerts (`aeri.ars`)
+
+The ARS composite score (Library 3) and early-warning alerts (Library 4)
+live together under `aeri.ars` -- the proposal names Library 4 "riskalert,
+or part of ars", and the alerts need the ARS composite's own country-month
+history, so folding them in avoided an awkward split.
+
+| Function | What it does |
+| --- | --- |
+| `components()` | Intensity `= clip(AERI/200, 0, 1)`, Breadth `= clip(RelevantSharePct/100, 0, 1)`, Severity `= clip(AvgSeverityAmongRelevant/4, 0, 1)`, Structure `= clip(ActivePillars/8, 0, 1)` |
+| `ars_benchmark()` | `ARS = 100 * sum(weight * component)`, fixed 40/25/20/15 weights (the production weighting) |
+| `calibrate_ars_weights()` | First-principal-component weights for the 4 components |
+| `ars_pca()` | `ARS` under PCA-calibrated weights (26.25 / 27.22 / 32.23 / 14.30 by default) |
+| `risk_band()` | `Low` (<20) / `Moderate` (<40) / `Elevated` (<60) / `High` (<80) / `Severe` |
+| `save_calibration()` / `load_calibration()` | Freezes a weight calibration (ARS or pillar) as a dated version |
+| `level_alert()` | `ARS >= 60` |
+| `spike_alert()` | `ARS` rises by 15+ versus the immediately preceding country-month |
+| `structural_alert()` | `ActivePillars >= 4` **and** `AvgSeverityAmongRelevant >= 2.5` |
+| `persistence_alert()` | `ARS >= 50` for 3 consecutive country-months |
+| `alert_table()` | All four alert flags per country-month |
+
+```python
+comps = aeri.components(aeri_df, diag, coverage)  # Intensity/Breadth/Severity/Structure
+ars_df = aeri.ars_benchmark(comps)                 # ARS, fixed weights
+band = aeri.risk_band(ars_df.loc[0, "ARS"])
+alerts = aeri.alert_table(ars_df, diag, coverage)  # Alert_Level/Spike/Structural/Persistent
+```
+
+Every rule in this module (including every threshold and the component
+formulas themselves) was verified against the **complete real production
+panel** (7,127 country-months, 54 countries, Jan 2015-Jul 2025) with
+exhaustive per-row arithmetic checks, not spot samples -- `ars_benchmark()`
+and `components()` reproduce real `aeri_risk_score_country_period.csv`
+rows to full precision, and every alert rule (including exact risk-band
+boundaries, e.g. `ARS=40.0` is `"Elevated"` not `"Moderate"`) matched
+every one of the 7,127 real rows with zero mismatches. The one exception,
+`calibrate_ars_weights()`/`DEFAULT_ARS_PCA_WEIGHTS`, has no frozen
+calibration artifact beyond the paper's own Table 3 to ship as a default.
+
+`spike_alert()`/`persistence_alert()` compare each country-month against
+the immediately preceding *row* in that country's `Period`-sorted series,
+not a calendar-month lookup -- confirmed to match the real pipeline
+exactly, because the real panel has no calendar gaps (every country-month
+with >=1 article gets a row there; the >=100-article coverage rule is
+applied only for descriptive comparisons, not row inclusion). If your own
+panel has gaps (e.g. after `coverage_filter()`), these functions will
+compare across the gap as if adjacent -- genuinely undocumented in the
+source material either way, so treat that case as your own call.
+
 ## Dictionaries
 
 `data/aeri_country_keywords.json` is the real, production EPTU-schema
@@ -158,8 +211,10 @@ confirmation.
 
 ## Roadmap
 
-- `ars` composite score (Library 3): `ARS = 100 * (0.40*Intensity + 0.25*Breadth + 0.20*Severity + 0.15*Structure)`, risk bands at 20/40/60/80
-- `riskalert` early-warning alerts (Library 4)
+Libraries 1-4 (this repo's full scope per the proposal's packaging table)
+are complete. Beyond `aeri`, the proposal recommends separate packages:
+`riskvalidate` (lead-lag validation + panel VAR, generic beyond CAPE) and
+an optional `riskviz` (charts/dashboards) -- not part of this repo.
 
 ## Development
 
